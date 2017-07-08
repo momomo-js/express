@@ -8,7 +8,11 @@ class ExpressServer extends core_1.MoBasicServer {
         super();
         this.app = null;
         this.middlewareList = null;
-        this.routerHandler = this.loadMoApplication(new router_handler_1.RouterHandler());
+    }
+    get routerHandler() {
+        if (!this._routerHandler)
+            this._routerHandler = this.loadMoApplication(new router_handler_1.RouterHandler());
+        return this._routerHandler;
     }
     addMiddleware(...middleware) {
         if (!this.middlewareList) {

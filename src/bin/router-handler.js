@@ -19,31 +19,33 @@ class RouterHandler extends core_1.MoApplication {
         this.controllerList = this.moServer.routerManager.controllerList;
         for (let controller of this.controllerList) {
             let cPath = Reflect.getMetadata(core_1.PATH, controller);
-            for (let member in controller) {
-                let method = Reflect.getMetadata(core_1.METHOD, controller, member);
+            let members = Reflect.getMetadata(core_1.CONTROLLER, controller);
+            for (let member of members) {
+                let method = Reflect.getMetadata(core_1.METHOD, controller, member.name);
                 if (!method)
                     continue;
-                let mPath = Reflect.getMetadata(core_1.PATH, controller, member);
+                let mPath = Reflect.getMetadata(core_1.PATH, controller, member.name);
                 let finalPath = RouterHandler.getFinalPath(cPath, mPath);
+                this.debug(`${method.toString().replace("Symbol", "")} -> ${finalPath}`);
                 switch (method) {
                     case symbol_1.GET:
                         this.app.get(finalPath, (req, res, next) => {
-                            this.run(req, res, next, controller, controller[member]);
+                            this.run(req, res, next, controller, member);
                         });
                         break;
                     case symbol_1.POST:
                         this.app.post(finalPath, (req, res, next) => {
-                            this.run(req, res, next, controller, controller[member]);
+                            this.run(req, res, next, controller, member);
                         });
                         break;
                     case symbol_1.DEL:
                         this.app.delete(finalPath, (req, res, next) => {
-                            this.run(req, res, next, controller, controller[member]);
+                            this.run(req, res, next, controller, member);
                         });
                         break;
                     case symbol_1.PUT:
                         this.app.put(finalPath, (req, res, next) => {
-                            this.run(req, res, next, controller, controller[member]);
+                            this.run(req, res, next, controller, member);
                         });
                         break;
                     default:
@@ -55,6 +57,7 @@ class RouterHandler extends core_1.MoApplication {
     run(req, res, next, cIns, cFun) {
         let p = this;
         co(function* () {
+            p.debug(`Request (${cIns.constructor.name} -> ${cFun.name})`);
             p._controller(req, res, next, cIns, cFun);
         });
     }
@@ -73,7 +76,7 @@ class RouterHandler extends core_1.MoApplication {
         if (mPath == '/')
             return cPath;
         else {
-            return cPath + mPath;
+            return (cPath == '/' ? '' : cPath) + mPath;
         }
     }
     static paramsDI(cFunParams, resHandler, Models, req) {

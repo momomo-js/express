@@ -5,7 +5,8 @@ import { RouterHandler } from "./router-handler";
 export declare class ExpressServer extends MoBasicServer {
     app: e.Express;
     middlewareList: e.RequestHandler[];
-    routerHandler: RouterHandler;
+    _routerHandler: RouterHandler;
+    readonly routerHandler: RouterHandler;
     constructor();
     addMiddleware(...middleware: e.RequestHandler[]): void;
     initMiddleware(): void;

@@ -1,4 +1,4 @@
-import {ControllerInterface, METHOD, MoApplication, PARAMS, PATH} from "@mo/core";
+import {CONTROLLER, ControllerInterface, METHOD, MoApplication, PARAMS, PATH} from "@mo/core";
 import {ExpressServer} from "./express-server";
 import {DEL, GET, POST, PUT, RESPOND} from "../decoration/symbol";
 import * as co from "co";
@@ -21,36 +21,40 @@ export class RouterHandler extends MoApplication {
 
         for (let controller of this.controllerList) {
             let cPath = Reflect.getMetadata(PATH, controller);
-            for (let member in controller) {
-                //to do
-                let method = Reflect.getMetadata(METHOD, controller, member);
+            let members = Reflect.getMetadata(CONTROLLER, controller);
+            for (let member of members) {
+                //todo
+                let method = Reflect.getMetadata(METHOD, controller, member.name);
+
                 if (!method)
                     continue;
 
                 //to do 
-                let mPath = Reflect.getMetadata(PATH, controller, member);
+                let mPath = Reflect.getMetadata(PATH, controller, member.name);
 
                 let finalPath = RouterHandler.getFinalPath(cPath, mPath);
+
+                this.debug(`${method.toString().replace("Symbol","")} -> ${finalPath}`);
 
                 switch (method) {
                     case GET:
                         this.app.get(finalPath, (req: e.Request, res: e.Response, next: e.NextFunction) => {
-                            this.run(req, res, next, controller, controller[member]);
+                            this.run(req, res, next, controller, member);
                         });
                         break;
                     case POST:
                         this.app.post(finalPath, (req: e.Request, res: e.Response, next: e.NextFunction) => {
-                            this.run(req, res, next, controller, controller[member]);
+                            this.run(req, res, next, controller, member);
                         });
                         break;
                     case DEL:
                         this.app.delete(finalPath, (req: e.Request, res: e.Response, next: e.NextFunction) => {
-                            this.run(req, res, next, controller, controller[member]);
+                            this.run(req, res, next, controller, member);
                         });
                         break;
                     case PUT:
                         this.app.put(finalPath, (req: e.Request, res: e.Response, next: e.NextFunction) => {
-                            this.run(req, res, next, controller, controller[member]);
+                            this.run(req, res, next, controller, member);
                         });
                         break;
                     default:
@@ -63,6 +67,7 @@ export class RouterHandler extends MoApplication {
     run(req: e.Request, res: e.Response, next: e.NextFunction, cIns: ControllerInterface, cFun: Function) {
         let p = this;
         co(function *() {
+            p.debug(`Request (${cIns.constructor.name} -> ${cFun.name})`);
             //to do 插件管理
             p._controller(req, res, next, cIns, cFun);
         });
@@ -95,7 +100,7 @@ export class RouterHandler extends MoApplication {
         if (mPath == '/')
             return cPath;
         else {
-            return cPath + mPath;
+            return (cPath == '/' ? '' : cPath) + mPath;
         }
     }
 
