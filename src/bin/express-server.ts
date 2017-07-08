@@ -6,13 +6,19 @@ export class ExpressServer extends MoBasicServer {
 
     app: e.Express = null;
     middlewareList: e.RequestHandler[] = null;
-    routerHandler: RouterHandler;
+    _routerHandler: RouterHandler;
 
+    get routerHandler():RouterHandler
+    {
+        if(!this._routerHandler)
+            this._routerHandler = this.loadMoApplication(new RouterHandler());
+
+        return this._routerHandler;
+    }
     constructor()
     {
         super();
-        this.routerHandler = this.loadMoApplication(new RouterHandler());
-        
+
     }
     /**
      * 添加中间件
