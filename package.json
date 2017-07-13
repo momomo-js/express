@@ -4,6 +4,7 @@
   "description": "mothings creative framework express module",
   "private": true,
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
