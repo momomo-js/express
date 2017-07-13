@@ -4,23 +4,24 @@ import {Controller, Method, MoServer, Router} from "@mo/core";
 import {Express} from "../src/decoration/express";
 import {ResponseHandler} from "../src/bin/router/response.handler";
 import * as co from "co";
-let server: MoServer = new MoServer('Hello',3000);
+let server: MoServer = new MoServer('Hello', 3000);
 let express: ExpressServer = new ExpressServer();
 
+
 class IndexModel {
-    test: string;
-    haha: string;
+    test = 'string';
+    haha = 'number';
 }
 
 @Controller({
     models: [
         IndexModel
     ],
-    path:'/'
+    path: '/'
 })
 class IndexController {
 
-    @Method(GET,'/')
+    @Method(GET, '/')
     @Express({
         responds: [{
             status: 1,
@@ -31,14 +32,12 @@ class IndexController {
         return co(function *() {
             let q = 1;
             res.status(1).body({
-                hahahh:'hhfehf'
+                hahahh: 'hhfehf'
             });
             return res;
         });
-
     }
 }
-
 
 @Router({
     controllers: [

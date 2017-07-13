@@ -1,4 +1,4 @@
-import {ResMessage} from "../decoration/res-message.interface";
+import {ResMessage} from "./res-message.interface";
 export interface ExpressOptions {
     responds?:ResMessage[];
 }

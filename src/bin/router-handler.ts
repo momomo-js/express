@@ -4,19 +4,23 @@ import {DEL, GET, POST, PUT, RESPOND} from "../decoration/symbol";
 import * as co from "co";
 import {requireHandleMethod} from "./router/require-handle.method";
 import {ResponseHandler} from "./router/response.handler";
-import {ResMessage} from "../decoration/res-message.interface";
+import {ResMessage} from "../define/res-message.interface";
+import {AfterControllerMethod, BeforeControllerMethod} from "../define/controller-plugin.interface";
 import e = require("express");
 
 export class RouterHandler extends MoApplication {
     app: e.Express = null;
     controllerList: ControllerInterface[] = null;
+    express: ExpressServer = null;
 
     initController() {
+        this.debug(`init Controller`);
         this.app = (this.context as ExpressServer).app;
         if (!this.app) {
             throw new Error(`app is null`);
         }
 
+        this.express = this.context as ExpressServer;
         this.controllerList = this.moServer.routerManager.controllerList;
 
         for (let controller of this.controllerList) {
@@ -34,7 +38,7 @@ export class RouterHandler extends MoApplication {
 
                 let finalPath = RouterHandler.getFinalPath(cPath, mPath);
 
-                this.debug(`${method.toString().replace("Symbol","")} -> ${finalPath}`);
+                this.debug(`register: ${method.toString().replace("Symbol", "")} -> ${finalPath}`);
 
                 switch (method) {
                     case GET:
@@ -67,19 +71,50 @@ export class RouterHandler extends MoApplication {
     run(req: e.Request, res: e.Response, next: e.NextFunction, cIns: ControllerInterface, cFun: Function) {
         let p = this;
         co(function *() {
-            p.debug(`Request (${cIns.constructor.name} -> ${cFun.name})`);
             //to do 插件管理
-            p._controller(req, res, next, cIns, cFun);
-        });
-    }
-
-    _controller(req: e.Request, res: e.Response, next: e.NextFunction, cIns: ControllerInterface, cFun: Function) {
-        let p = this;
-        co(function *() {
             //responseHandler
             let respond_data: ResMessage[] = Reflect.getMetadata(RESPOND, cIns, cFun.name) as ResMessage[];
 
             let resHandler = new ResponseHandler(res, next, respond_data);
+
+            let result = true;
+            //@Before Controller
+            for (let m of p.express.beforeControllerMethodList) {
+                let method = m as BeforeControllerMethod;
+                let methodret = yield method(req, resHandler,cIns,cFun);
+                if (! methodret) {
+                    p.debug(`method: ${method.name} return false`);
+                    result = false;
+                }
+            }
+
+            if (result) {
+                p.debug(`Request (${cIns.constructor.name} -> ${cFun.name})`);
+                yield p._controller(req, resHandler, cIns, cFun);
+            }
+
+            //@After Controller
+
+            for (let m of p.express.afterControllerMethodList) {
+                let method = m as AfterControllerMethod;
+                let methodret = yield method(resHandler,cIns,cFun);
+                if (!methodret) {
+                    p.debug(`method: ${method.name} return false`);
+                    //todo
+                    //这里如果为false 则应返回500
+                    result = false;
+                }
+            }
+
+            resHandler.response();
+
+        });
+    }
+
+    _controller(req: e.Request, resHandler: ResponseHandler, cIns: ControllerInterface, cFun: Function): ResponseHandler {
+        let p = this;
+        return co(function *() {
+
 
             //获取cFun的接口
             let cFunParams: String[] = Reflect.getMetadata(PARAMS, cIns, cFun.name);
@@ -90,7 +125,7 @@ export class RouterHandler extends MoApplication {
             //运行cFun
             let ret = yield cFun.apply(cIns, params);
 
-            ret.response();
+            return ret;
 
         });
     }

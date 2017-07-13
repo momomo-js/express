@@ -1,6 +1,6 @@
 /// <reference types="express" />
 import e = require("express");
-import { ResMessage } from "../../decoration/res-message.interface";
+import { ResMessage } from "../../define/res-message.interface";
 export declare class ResponseHandler {
     private res;
     private _next;

@@ -10,12 +10,15 @@ class RouterHandler extends core_1.MoApplication {
         super(...arguments);
         this.app = null;
         this.controllerList = null;
+        this.express = null;
     }
     initController() {
+        this.debug(`init Controller`);
         this.app = this.context.app;
         if (!this.app) {
             throw new Error(`app is null`);
         }
+        this.express = this.context;
         this.controllerList = this.moServer.routerManager.controllerList;
         for (let controller of this.controllerList) {
             let cPath = Reflect.getMetadata(core_1.PATH, controller);
@@ -26,7 +29,7 @@ class RouterHandler extends core_1.MoApplication {
                     continue;
                 let mPath = Reflect.getMetadata(core_1.PATH, controller, member.name);
                 let finalPath = RouterHandler.getFinalPath(cPath, mPath);
-                this.debug(`${method.toString().replace("Symbol", "")} -> ${finalPath}`);
+                this.debug(`register: ${method.toString().replace("Symbol", "")} -> ${finalPath}`);
                 switch (method) {
                     case symbol_1.GET:
                         this.app.get(finalPath, (req, res, next) => {
@@ -57,19 +60,39 @@ class RouterHandler extends core_1.MoApplication {
     run(req, res, next, cIns, cFun) {
         let p = this;
         co(function* () {
-            p.debug(`Request (${cIns.constructor.name} -> ${cFun.name})`);
-            p._controller(req, res, next, cIns, cFun);
-        });
-    }
-    _controller(req, res, next, cIns, cFun) {
-        let p = this;
-        co(function* () {
             let respond_data = Reflect.getMetadata(symbol_1.RESPOND, cIns, cFun.name);
             let resHandler = new response_handler_1.ResponseHandler(res, next, respond_data);
+            let result = true;
+            for (let m of p.express.beforeControllerMethodList) {
+                let method = m;
+                let methodret = yield method(req, resHandler, cIns, cFun);
+                if (!methodret) {
+                    p.debug(`method: ${method.name} return false`);
+                    result = false;
+                }
+            }
+            if (result) {
+                p.debug(`Request (${cIns.constructor.name} -> ${cFun.name})`);
+                yield p._controller(req, resHandler, cIns, cFun);
+            }
+            for (let m of p.express.afterControllerMethodList) {
+                let method = m;
+                let methodret = yield method(resHandler, cIns, cFun);
+                if (!methodret) {
+                    p.debug(`method: ${method.name} return false`);
+                    result = false;
+                }
+            }
+            resHandler.response();
+        });
+    }
+    _controller(req, resHandler, cIns, cFun) {
+        let p = this;
+        return co(function* () {
             let cFunParams = Reflect.getMetadata(core_1.PARAMS, cIns, cFun.name);
             let params = RouterHandler.paramsDI(cFunParams, resHandler, cIns.modelList, req);
             let ret = yield cFun.apply(cIns, params);
-            ret.response();
+            return ret;
         });
     }
     static getFinalPath(cPath, mPath) {
