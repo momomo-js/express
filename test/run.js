@@ -15,4 +15,4 @@ require('ts-node').register({
     ]
 });
 
-require('./index.ts');
+require('./index2.ts');
