@@ -50,7 +50,7 @@ class IndexRouter {
 
 server.addServer(express);
 
-server.routerManager.addRouter(IndexRouter);
+server.routerManager.addRouter([IndexRouter]);
 
 server.startSever();
 

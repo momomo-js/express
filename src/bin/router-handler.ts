@@ -1,4 +1,4 @@
-import {CONTROLLER, ControllerInterface, METHOD, MoApplication, PARAMS, PATH} from "@mo/core";
+import {CONTROLLER, IController, METHOD, MoApplication, PARAMS, PATH} from "@mo/core";
 import {ExpressServer} from "./express-server";
 import {DEL, GET, POST, PUT, RESPOND} from "../decoration/symbol";
 import * as co from "co";
@@ -10,7 +10,7 @@ import e = require("express");
 
 export class RouterHandler extends MoApplication {
     app: e.Express = null;
-    controllerList: ControllerInterface[] = null;
+    controllerList: IController[] = null;
     express: ExpressServer = null;
 
     initController() {
@@ -68,7 +68,7 @@ export class RouterHandler extends MoApplication {
         }
     }
 
-    run(req: e.Request, res: e.Response, next: e.NextFunction, cIns: ControllerInterface, cFun: Function) {
+    run(req: e.Request, res: e.Response, next: e.NextFunction, cIns: IController, cFun: Function) {
         let p = this;
         co(function *() {
             //to do 插件管理
@@ -111,7 +111,7 @@ export class RouterHandler extends MoApplication {
         });
     }
 
-    _controller(req: e.Request, resHandler: ResponseHandler, cIns: ControllerInterface, cFun: Function): ResponseHandler {
+    _controller(req: e.Request, resHandler: ResponseHandler, cIns: IController, cFun: Function): ResponseHandler {
         let p = this;
         return co(function *() {
 
