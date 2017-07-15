@@ -5,3 +5,4 @@ export * from './src/decoration/express';
 export * from './src/define/res-message.interface';
 export * from './src/decoration/symbol';
 export * from './src/define/express-options.interface';
+export * from './src/import/index';

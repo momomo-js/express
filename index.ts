@@ -7,6 +7,9 @@ export * from './src/define/res-message.interface';
 export * from './src/decoration/symbol';
 
 export * from './src/define/express-options.interface';
+
+export *  from './src/import/index';
+
 /**
  * Created by yskun on 2017/7/3.
  */
