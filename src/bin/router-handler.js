@@ -109,6 +109,9 @@ class RouterHandler extends core_1.MoApplication {
                 case "ResponseHandler":
                     ret.push(resHandler);
                     break;
+                case "e.Request":
+                    ret.push(req);
+                    break;
                 default:
                     let model = Models.get(member);
                     if (model) {
