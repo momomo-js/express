@@ -23,36 +23,38 @@ class RouterHandler extends core_1.MoApplication {
         for (let controller of this.controllerList) {
             let cPath = Reflect.getMetadata(core_1.PATH, controller);
             let members = Reflect.getMetadata(core_1.CONTROLLER, controller);
-            for (let member of members) {
-                let method = Reflect.getMetadata(core_1.METHOD, controller, member.name);
-                if (!method)
-                    continue;
-                let mPath = Reflect.getMetadata(core_1.PATH, controller, member.name);
-                let finalPath = RouterHandler.getFinalPath(cPath, mPath);
-                this.debug(`register: ${method.toString().replace("Symbol", "")} -> ${finalPath}`);
-                switch (method) {
-                    case symbol_1.GET:
-                        this.app.get(finalPath, (req, res, next) => {
-                            this.run(req, res, next, controller, member);
-                        });
-                        break;
-                    case symbol_1.POST:
-                        this.app.post(finalPath, (req, res, next) => {
-                            this.run(req, res, next, controller, member);
-                        });
-                        break;
-                    case symbol_1.DEL:
-                        this.app.delete(finalPath, (req, res, next) => {
-                            this.run(req, res, next, controller, member);
-                        });
-                        break;
-                    case symbol_1.PUT:
-                        this.app.put(finalPath, (req, res, next) => {
-                            this.run(req, res, next, controller, member);
-                        });
-                        break;
-                    default:
-                        break;
+            if (members) {
+                for (let member of members) {
+                    let method = Reflect.getMetadata(core_1.METHOD, controller, member.name);
+                    if (!method)
+                        continue;
+                    let mPath = Reflect.getMetadata(core_1.PATH, controller, member.name);
+                    let finalPath = RouterHandler.getFinalPath(cPath, mPath);
+                    this.debug(`register: ${method.toString().replace("Symbol", "")} -> ${finalPath}`);
+                    switch (method) {
+                        case symbol_1.GET:
+                            this.app.get(finalPath, (req, res, next) => {
+                                this.run(req, res, next, controller, member);
+                            });
+                            break;
+                        case symbol_1.POST:
+                            this.app.post(finalPath, (req, res, next) => {
+                                this.run(req, res, next, controller, member);
+                            });
+                            break;
+                        case symbol_1.DEL:
+                            this.app.delete(finalPath, (req, res, next) => {
+                                this.run(req, res, next, controller, member);
+                            });
+                            break;
+                        case symbol_1.PUT:
+                            this.app.put(finalPath, (req, res, next) => {
+                                this.run(req, res, next, controller, member);
+                            });
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }

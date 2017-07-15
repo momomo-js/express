@@ -4,6 +4,7 @@ import {Controller, Method, MoServer, Router} from "@mo/core";
 import {Express} from "../src/decoration/express";
 import {ResponseHandler} from "../src/bin/router/response.handler";
 import * as co from "co";
+
 let server: MoServer = new MoServer('Hello', 3000);
 let express: ExpressServer = new ExpressServer();
 

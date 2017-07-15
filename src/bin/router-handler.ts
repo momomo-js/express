@@ -26,44 +26,49 @@ export class RouterHandler extends MoApplication {
         for (let controller of this.controllerList) {
             let cPath = Reflect.getMetadata(PATH, controller);
             let members = Reflect.getMetadata(CONTROLLER, controller);
-            for (let member of members) {
-                //todo
-                let method = Reflect.getMetadata(METHOD, controller, member.name);
 
-                if (!method)
-                    continue;
+            if (members)
+            {
+                for (let member of members) {
+                    //todo
+                    let method = Reflect.getMetadata(METHOD, controller, member.name);
 
-                //to do 
-                let mPath = Reflect.getMetadata(PATH, controller, member.name);
+                    if (!method)
+                        continue;
 
-                let finalPath = RouterHandler.getFinalPath(cPath, mPath);
+                    //to do
+                    let mPath = Reflect.getMetadata(PATH, controller, member.name);
 
-                this.debug(`register: ${method.toString().replace("Symbol", "")} -> ${finalPath}`);
+                    let finalPath = RouterHandler.getFinalPath(cPath, mPath);
 
-                switch (method) {
-                    case GET:
-                        this.app.get(finalPath, (req: e.Request, res: e.Response, next: e.NextFunction) => {
-                            this.run(req, res, next, controller, member);
-                        });
-                        break;
-                    case POST:
-                        this.app.post(finalPath, (req: e.Request, res: e.Response, next: e.NextFunction) => {
-                            this.run(req, res, next, controller, member);
-                        });
-                        break;
-                    case DEL:
-                        this.app.delete(finalPath, (req: e.Request, res: e.Response, next: e.NextFunction) => {
-                            this.run(req, res, next, controller, member);
-                        });
-                        break;
-                    case PUT:
-                        this.app.put(finalPath, (req: e.Request, res: e.Response, next: e.NextFunction) => {
-                            this.run(req, res, next, controller, member);
-                        });
-                        break;
-                    default:
-                        break;
+                    this.debug(`register: ${method.toString().replace("Symbol", "")} -> ${finalPath}`);
+
+                    switch (method) {
+                        case GET:
+                            this.app.get(finalPath, (req: e.Request, res: e.Response, next: e.NextFunction) => {
+                                this.run(req, res, next, controller, member);
+                            });
+                            break;
+                        case POST:
+                            this.app.post(finalPath, (req: e.Request, res: e.Response, next: e.NextFunction) => {
+                                this.run(req, res, next, controller, member);
+                            });
+                            break;
+                        case DEL:
+                            this.app.delete(finalPath, (req: e.Request, res: e.Response, next: e.NextFunction) => {
+                                this.run(req, res, next, controller, member);
+                            });
+                            break;
+                        case PUT:
+                            this.app.put(finalPath, (req: e.Request, res: e.Response, next: e.NextFunction) => {
+                                this.run(req, res, next, controller, member);
+                            });
+                            break;
+                        default:
+                            break;
+                    }
                 }
+
             }
         }
     }
@@ -81,8 +86,8 @@ export class RouterHandler extends MoApplication {
             //@Before Controller
             for (let m of p.express.beforeControllerMethodList) {
                 let method = m as BeforeControllerMethod;
-                let methodret = yield method(req, resHandler,cIns,cFun);
-                if (! methodret) {
+                let methodret = yield method(req, resHandler, cIns, cFun);
+                if (!methodret) {
                     p.debug(`method: ${method.name} return false`);
                     result = false;
                 }
@@ -97,7 +102,7 @@ export class RouterHandler extends MoApplication {
 
             for (let m of p.express.afterControllerMethodList) {
                 let method = m as AfterControllerMethod;
-                let methodret = yield method(resHandler,cIns,cFun);
+                let methodret = yield method(resHandler, cIns, cFun);
                 if (!methodret) {
                     p.debug(`method: ${method.name} return false`);
                     //todo
