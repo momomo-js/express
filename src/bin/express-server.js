@@ -32,7 +32,7 @@ class ExpressServer extends core_1.MoBasicServer {
         this._state = core_1.State.onRun;
     }
     addPlugin(pluginPackageIns) {
-        this.debug(`add plugin from ${pluginPackageIns.name}`);
+        this.debug(`add plugin from ${pluginPackageIns.constructor.name}`);
         if (pluginPackageIns) {
             let ret = ExpressServer.getPlugin(pluginPackageIns, symbol_1.ExpressMiddleware);
             this.addMiddleware(...ret);

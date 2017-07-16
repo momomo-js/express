@@ -56,7 +56,7 @@ export class ExpressServer extends MoBasicServer {
 
     addPlugin(pluginPackageIns: any) {
 
-        this.debug(`add plugin from ${pluginPackageIns.name}` );
+        this.debug(`add plugin from ${pluginPackageIns.constructor.name}` );
         if(pluginPackageIns)
         {
             let ret = ExpressServer.getPlugin(pluginPackageIns,ExpressMiddleware);

@@ -5,6 +5,7 @@ const symbol_1 = require("../decoration/symbol");
 const co = require("co");
 const require_handle_method_1 = require("./router/require-handle.method");
 const response_handler_1 = require("./router/response.handler");
+const origin_class_1 = require("../define/origin.class");
 class RouterHandler extends core_1.MoApplication {
     constructor() {
         super(...arguments);
@@ -92,7 +93,7 @@ class RouterHandler extends core_1.MoApplication {
         let p = this;
         return co(function* () {
             let cFunParams = Reflect.getMetadata(core_1.PARAMS, cIns, cFun.name);
-            let params = RouterHandler.paramsDI(cFunParams, resHandler, cIns.modelList, req);
+            let params = RouterHandler.paramsDI(cFunParams, resHandler, cIns.modelList, req, resHandler['res']);
             let ret = yield cFun.apply(cIns, params);
             return ret;
         });
@@ -104,15 +105,18 @@ class RouterHandler extends core_1.MoApplication {
             return (cPath == '/' ? '' : cPath) + mPath;
         }
     }
-    static paramsDI(cFunParams, resHandler, Models, req) {
+    static paramsDI(cFunParams, resHandler, Models, req, res) {
         let ret = [];
         for (let member of cFunParams) {
             switch (member) {
                 case "ResponseHandler":
                     ret.push(resHandler);
                     break;
-                case "e.Request":
-                    ret.push(req);
+                case "Origin":
+                    let o = new origin_class_1.Origin();
+                    o.request = req;
+                    o.response = res;
+                    ret.push(o);
                     break;
                 default:
                     let model = Models.get(member);

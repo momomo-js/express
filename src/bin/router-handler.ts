@@ -7,6 +7,7 @@ import {ResponseHandler} from "./router/response.handler";
 import {ResMessage} from "../define/res-message.interface";
 import {AfterControllerMethod, BeforeControllerMethod} from "../define/controller-plugin.interface";
 import e = require("express");
+import {Origin} from "../define/origin.class";
 
 export class RouterHandler extends MoApplication {
     app: e.Express = null;
@@ -125,7 +126,7 @@ export class RouterHandler extends MoApplication {
             let cFunParams: String[] = Reflect.getMetadata(PARAMS, cIns, cFun.name);
 
             //比对需要的Model
-            let params = RouterHandler.paramsDI(cFunParams, resHandler, cIns.modelList, req);
+            let params = RouterHandler.paramsDI(cFunParams, resHandler, cIns.modelList, req,resHandler['res']);
 
             //运行cFun
             let ret = yield cFun.apply(cIns, params);
@@ -144,15 +145,18 @@ export class RouterHandler extends MoApplication {
         }
     }
 
-    static paramsDI(cFunParams: String[], resHandler: ResponseHandler, Models: Map<String, Object>, req: e.Request): Object[] {
+    static paramsDI(cFunParams: String[], resHandler: ResponseHandler, Models: Map<String, Object>, req: e.Request,res:e.Response): Object[] {
         let ret = [];
         for (let member of cFunParams) {
             switch (member) {
                 case "ResponseHandler":
                     ret.push(resHandler);
                     break;
-                case "e.Request":
-                    ret.push(req);
+                case "Origin":
+                    let o = new Origin();
+                    o.request = req;
+                    o.response = res;
+                    ret.push(o);
                     break;
                 default:
                     let model = Models.get(member);
