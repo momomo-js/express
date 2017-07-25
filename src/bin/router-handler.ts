@@ -145,7 +145,7 @@ export class RouterHandler extends MoApplication {
         }
     }
 
-    static paramsDI(cFunParams: String[], resHandler: ResponseHandler, Models: Map<String, Object>, req: e.Request, res: e.Response): Object[] {
+    static paramsDI(cFunParams: String[], resHandler: ResponseHandler, Models: Map<String, any>, req: e.Request, res: e.Response): Object[] {
         let ret = [];
         for (let member of cFunParams) {
             switch (member) {
@@ -161,12 +161,13 @@ export class RouterHandler extends MoApplication {
                 default:
                     let model = Models.get(member);
                     if (model) {
-                        let metaKeys: Set<string> = Reflect.getMetadata(PARAMETERS, model);
+                        let mIns = new model();
+                        let metaKeys: Set<string> = Reflect.getMetadata(PARAMETERS, mIns);
                         let o = null;
                         if (metaKeys) {
-                            o = requireHandleMethod(model, metaKeys, [req]);
+                            o = requireHandleMethod(mIns, metaKeys, [req]);
                         } else {
-                            o = requireHandleMethod(model, null, [req.query, req.params, req.body])
+                            o = requireHandleMethod(mIns, null, [req.query, req.params, req.body])
                         }
                         if (o)
                             ret.push(o);
