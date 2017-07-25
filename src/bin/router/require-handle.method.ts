@@ -1,18 +1,20 @@
 import * as _ from "underscore";
 import {IParameter} from "../../define/parameter.interface";
+import {ARRAY_TYPE} from "../../decoration/parameter";
 
 function typeHandler(object: string, type: Object) {
-    if (type !== String ) {
-        switch (type) {
-            case Number:
-                return Number(object);
-            case Boolean:
-                return Boolean(object);
-            case Date:
-                return new Date(object);
-        }
+    switch (type) {
+        case Number:
+            return Number(object);
+        case Boolean:
+            return Boolean(object);
+        case Date:
+            return new Date(object);
+        case String:
+            return object;
+        default:
+            return object;
     }
-    return object;
 }
 
 export function requireHandleMethod(RequireModel: any, metadataKeys: Set<string>, targets: any[]): any {
@@ -28,8 +30,21 @@ export function requireHandleMethod(RequireModel: any, metadataKeys: Set<string>
             let object = target[key];
             if (object) {
                 for (let parameter of parameters) {
+
                     if (object[parameter.property]) {
-                        ret[parameter.property] = typeHandler(object[parameter.property], parameter.type);
+                        if (parameter.type === Array && object[parameter.property].length) {
+                            let type = Reflect.getMetadata(ARRAY_TYPE, RequireModel, parameter.property);
+                            if (type) {
+                                ret[parameter.property] = [];
+                                for (let i = 0; i < object[parameter.property].length; i++) {
+                                    ret[parameter.property].push(typeHandler(object[parameter.property][i], type));
+                                }
+                            } else {
+                                ret[parameter.property] = object[parameter.property];
+                            }
+                        } else {
+                            ret[parameter.property] = typeHandler(object[parameter.property], parameter.type);
+                        }
                     }
                 }
             }

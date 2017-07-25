@@ -4,7 +4,7 @@ import {Controller, Method, MoServer, Router} from "@mo/core";
 import {Express} from "../src/decoration/express";
 import {ResponseHandler} from "../src/bin/router/response.handler";
 import * as co from "co";
-import {Body, Param, Query} from "../src/decoration/parameter";
+import {ArrayType, Body, Param, Query} from "../src/decoration/parameter";
 import {ExpressDefaultPluginPackage} from "@mo/express-default-module";
 
 let server: MoServer = new MoServer('Hello', 3000);
@@ -17,14 +17,15 @@ class IndexModel {
 }
 
 class NewIndexModel {
-    @Body
-    test: Number;
+    @Query
+    @ArrayType(Number)
+    test: number[];
 
     @Param
-    ts: Number;
+    ts: number;
 
     @Query
-    yy: Number;
+    yy: number;
 }
 
 
@@ -45,7 +46,7 @@ class IndexController {
         }]
     })
     index(model: IndexModel, res: ResponseHandler): ResponseHandler {
-        return co(function *() {
+        return co(function* () {
             res.status(1).body(model);
             return res;
         });
@@ -59,7 +60,7 @@ class IndexController {
         }]
     })
     post(model: NewIndexModel, res: ResponseHandler): ResponseHandler {
-        return co(function *() {
+        return co(function* () {
             res.status(1).body(model);
         })
     }
