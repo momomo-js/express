@@ -1,22 +1,38 @@
 import {ExpressServer} from "../src/bin/express-server";
-import {GET} from "../src/decoration/symbol";
+import {GET, POST} from "../src/decoration/symbol";
 import {Controller, Method, MoServer, Router} from "@mo/core";
 import {Express} from "../src/decoration/express";
 import {ResponseHandler} from "../src/bin/router/response.handler";
 import * as co from "co";
+import {ArrayType, Body, Param, Query} from "../src/decoration/parameter";
+import {ExpressDefaultPluginPackage} from "@mo/express-default-module";
 
 let server: MoServer = new MoServer('Hello', 3000);
 let express: ExpressServer = new ExpressServer();
 
 
 class IndexModel {
-    test = 'string';
-    haha = 'number';
+    test = Number;
+    haha = Number;
 }
+
+class NewIndexModel {
+    @Query
+    @ArrayType(Number)
+    test: number[];
+
+    @Param
+    ts: number;
+
+    @Query
+    yy: number;
+}
+
 
 @Controller({
     models: [
-        IndexModel
+        IndexModel,
+        NewIndexModel
     ],
     path: '/'
 })
@@ -30,13 +46,23 @@ class IndexController {
         }]
     })
     index(model: IndexModel, res: ResponseHandler): ResponseHandler {
-        return co(function *() {
-            let q = 1;
-            res.status(1).body({
-                hahahh: 'hhfehf'
-            });
+        return co(function* () {
+            res.status(1).body(model);
             return res;
         });
+    }
+
+    @Method(POST, '/:ts')
+    @Express({
+        responds: [{
+            status: 1,
+            message: '完成响应'
+        }]
+    })
+    post(model: NewIndexModel, res: ResponseHandler): ResponseHandler {
+        return co(function* () {
+            res.status(1).body(model);
+        })
     }
 }
 
@@ -50,6 +76,7 @@ class IndexRouter {
 
 
 server.addServer(express);
+express.addPlugin(new ExpressDefaultPluginPackage());
 
 server.routerManager.addRouter([IndexRouter]);
 

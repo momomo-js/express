@@ -8,6 +8,7 @@ import {ResMessage} from "../define/res-message.interface";
 import {AfterControllerMethod, BeforeControllerMethod} from "../define/controller-plugin.interface";
 import e = require("express");
 import {Origin} from "../define/origin.class";
+import {PARAMETERS} from "../decoration/parameter";
 
 export class RouterHandler extends MoApplication {
     app: e.Express = null;
@@ -28,8 +29,7 @@ export class RouterHandler extends MoApplication {
             let cPath = Reflect.getMetadata(PATH, controller);
             let members = Reflect.getMetadata(CONTROLLER, controller);
 
-            if (members)
-            {
+            if (members) {
                 for (let member of members) {
                     //todo
                     let method = Reflect.getMetadata(METHOD, controller, member.name);
@@ -76,7 +76,7 @@ export class RouterHandler extends MoApplication {
 
     run(req: e.Request, res: e.Response, next: e.NextFunction, cIns: IController, cFun: Function) {
         let p = this;
-        co(function *() {
+        co(function* () {
             //to do 插件管理
             //responseHandler
             let respond_data: ResMessage[] = Reflect.getMetadata(RESPOND, cIns, cFun.name) as ResMessage[];
@@ -119,14 +119,14 @@ export class RouterHandler extends MoApplication {
 
     _controller(req: e.Request, resHandler: ResponseHandler, cIns: IController, cFun: Function): ResponseHandler {
         let p = this;
-        return co(function *() {
+        return co(function* () {
 
 
             //获取cFun的接口
             let cFunParams: String[] = Reflect.getMetadata(PARAMS, cIns, cFun.name);
 
             //比对需要的Model
-            let params = RouterHandler.paramsDI(cFunParams, resHandler, cIns.modelList, req,resHandler['res']);
+            let params = RouterHandler.paramsDI(cFunParams, resHandler, cIns.modelList, req, resHandler['res']);
 
             //运行cFun
             let ret = yield cFun.apply(cIns, params);
@@ -145,7 +145,7 @@ export class RouterHandler extends MoApplication {
         }
     }
 
-    static paramsDI(cFunParams: String[], resHandler: ResponseHandler, Models: Map<String, Object>, req: e.Request,res:e.Response): Object[] {
+    static paramsDI(cFunParams: String[], resHandler: ResponseHandler, Models: Map<String, any>, req: e.Request, res: e.Response): Object[] {
         let ret = [];
         for (let member of cFunParams) {
             switch (member) {
@@ -161,8 +161,18 @@ export class RouterHandler extends MoApplication {
                 default:
                     let model = Models.get(member);
                     if (model) {
-                        let o = requireHandleMethod(model, req.params, req.body);
-                        ret.push(o);
+                        let mIns = new model();
+                        let metaKeys: Set<string> = Reflect.getMetadata(PARAMETERS, mIns);
+                        let o = null;
+                        if (metaKeys) {
+                            o = requireHandleMethod(mIns, metaKeys, [req]);
+                        } else {
+                            o = requireHandleMethod(mIns, null, [req.query, req.params, req.body])
+                        }
+                        if (o)
+                            ret.push(o);
+                    } else {
+                        ret.push(null);
                     }
                     break;
             }

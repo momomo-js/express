@@ -7,3 +7,7 @@ node_modules
 !/test/*
 !/Gruntfile.js
 .tscache
+.idea
+out
+
+package-lock.json

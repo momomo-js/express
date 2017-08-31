@@ -1,5 +1,4 @@
 import e = require("express");
-import * as _ from "underscore";
 import * as mime from "mime";
 import * as path from "path";
 import {ResMessage} from "../../define/res-message.interface";
@@ -48,7 +47,7 @@ export class ResponseHandler {
         return this;
     }
 
-    end(): void{
+    end(): void {
         return;
     }
 
