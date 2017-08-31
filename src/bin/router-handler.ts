@@ -171,6 +171,8 @@ export class RouterHandler extends MoApplication {
                         }
                         if (o)
                             ret.push(o);
+                    } else {
+                        ret.push(null);
                     }
                     break;
             }
