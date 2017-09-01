@@ -1,48 +1,109 @@
-import {CONTROLLER, IController, METHOD, MoApplication, PARAMS, PATH} from "@mo/core";
-import {ExpressServer} from "./express-server";
-import {DEL, GET, POST, PUT, RESPOND} from "../decoration/symbol";
-import * as co from "co";
-import {requireHandleMethod} from "./router/require-handle.method";
-import {ResponseHandler} from "./router/response.handler";
-import {ResMessage} from "../define/res-message.interface";
-import {AfterControllerMethod, BeforeControllerMethod} from "../define/controller-plugin.interface";
-import e = require("express");
-import {Origin} from "../define/origin.class";
-import {PARAMETERS} from "../decoration/parameter";
+import {
+    CONTROLLER, IController, METHOD, Mo, MoApplication, MoApplicationCycleLife, Module, MoInstance, OnInit, PARAMS, PATH,
+    RouterManager
+} from '@mo/core';
+import {ExpressManager} from './express-manager';
+import {DEL, GET, POST, PUT, RESPOND} from '../decoration/symbol';
+import * as co from 'co';
+import {requireHandleMethod} from './router/require-handle.method';
+import {ResponseHandler} from './router/response.handler';
+import {ResMessage} from '../define/res-message.interface';
+import {AfterControllerMethod, BeforeControllerMethod} from '../define/controller-plugin.interface';
+import e = require('express');
+import {Origin} from '../define/origin.class';
+import {PARAMETERS} from '../decoration/parameter';
+import {Injectable} from 'injection-js';
 
-export class RouterHandler extends MoApplication {
+@Injectable()
+export class RouterHandler extends Mo implements OnInit {
+
     app: e.Express = null;
     controllerList: IController[] = null;
-    express: ExpressServer = null;
+    static paramsDI(cFunParams: String[],
+                    resHandler: ResponseHandler,
+                    Models: Map<String, any>,
+                    req: e.Request,
+                    res: e.Response): Object[] {
+        const ret = [];
+        for (const member of cFunParams) {
+            switch (member) {
+                case 'ResponseHandler':
+                    ret.push(resHandler);
+                    break;
+                case 'Origin':
+                    const o = new Origin();
+                    o.request = req;
+                    o.response = res;
+                    ret.push(o);
+                    break;
+                default:
+                    const model = Models.get(member);
+                    if (model) {
+                        const mIns = new model();
+                        const metaKeys: Set<string> = Reflect.getMetadata(PARAMETERS, mIns);
+                        let o: any;
+                        if (metaKeys) {
+                            o = requireHandleMethod(mIns, metaKeys, [req]);
+                        } else {
+                            o = requireHandleMethod(mIns, null, [req.query, req.params, req.body])
+                        }
+                        if (o) {
+                            ret.push(o);
+                        }
+                    } else {
+                        ret.push(null);
+                    }
+                    break;
+            }
+        }
+        return ret;
+    }
+
+    private static getFinalPath(cPath: string, mPath: string): string {
+        // todo
+        if (mPath === '/') {
+            return cPath;
+        } else {
+            return (cPath === '/' ? '' : cPath) + mPath;
+        }
+    }
+    constructor(private express: ExpressManager,
+                private routerManager: RouterManager) {
+        super();
+    }
+
+    onInit() {
+        this.initController();
+    }
 
     initController() {
         this.debug(`init Controller`);
-        this.app = (this.context as ExpressServer).app;
+        this.app = this.express.app;
         if (!this.app) {
             throw new Error(`app is null`);
         }
 
-        this.express = this.context as ExpressServer;
-        this.controllerList = this.moServer.routerManager.controllerList;
+        this.controllerList = this.routerManager.controllerList;
 
-        for (let controller of this.controllerList) {
-            let cPath = Reflect.getMetadata(PATH, controller);
-            let members = Reflect.getMetadata(CONTROLLER, controller);
+        for (const controller of this.controllerList) {
+            const cPath = Reflect.getMetadata(PATH, controller);
+            const members = Reflect.getMetadata(CONTROLLER, controller);
 
             if (members) {
-                for (let member of members) {
-                    //todo
-                    let method = Reflect.getMetadata(METHOD, controller, member.name);
+                for (const member of members) {
+                    // todo
+                    const method = Reflect.getMetadata(METHOD, controller, member.name);
 
-                    if (!method)
+                    if (!method) {
                         continue;
+                    }
 
-                    //to do
-                    let mPath = Reflect.getMetadata(PATH, controller, member.name);
+                    // todo
+                    const mPath = Reflect.getMetadata(PATH, controller, member.name);
 
-                    let finalPath = RouterHandler.getFinalPath(cPath, mPath);
+                    const finalPath = RouterHandler.getFinalPath(cPath, mPath);
 
-                    this.debug(`register: ${method.toString().replace("Symbol", "")} -> ${finalPath}`);
+                    this.debug(`register: ${method.toString().replace('Symbol', '')} -> ${finalPath}`);
 
                     switch (method) {
                         case GET:
@@ -74,110 +135,58 @@ export class RouterHandler extends MoApplication {
         }
     }
 
-    run(req: e.Request, res: e.Response, next: e.NextFunction, cIns: IController, cFun: Function) {
-        let p = this;
-        co(function* () {
-            //to do 插件管理
-            //responseHandler
-            let respond_data: ResMessage[] = Reflect.getMetadata(RESPOND, cIns, cFun.name) as ResMessage[];
+    async run(req: e.Request, res: e.Response, next: e.NextFunction, cIns: IController, cFun: Function): Promise<void> {
+        // todo 插件管理
+        // responseHandler
+        const respond_data: ResMessage[] = Reflect.getMetadata(RESPOND, cIns, cFun.name) as ResMessage[];
 
-            let resHandler = new ResponseHandler(res, next, respond_data);
+        const resHandler = new ResponseHandler(res, next, respond_data);
 
-            let result = true;
-            //@Before Controller
-            for (let m of p.express.beforeControllerMethodList) {
-                let method = m as BeforeControllerMethod;
-                let methodret = yield method(req, resHandler, cIns, cFun);
-                if (!methodret) {
-                    p.debug(`method: ${method.name} return false`);
-                    result = false;
-                }
-            }
-
-            if (result) {
-                p.debug(`Request (${cIns.constructor.name} -> ${cFun.name})`);
-                yield p._controller(req, resHandler, cIns, cFun);
-            }
-
-            //@After Controller
-
-            for (let m of p.express.afterControllerMethodList) {
-                let method = m as AfterControllerMethod;
-                let methodret = yield method(resHandler, cIns, cFun);
-                if (!methodret) {
-                    p.debug(`method: ${method.name} return false`);
-                    //todo
-                    //这里如果为false 则应返回500
-                    result = false;
-                }
-            }
-
-            resHandler.response();
-
-        });
-    }
-
-    _controller(req: e.Request, resHandler: ResponseHandler, cIns: IController, cFun: Function): ResponseHandler {
-        let p = this;
-        return co(function* () {
-
-
-            //获取cFun的接口
-            let cFunParams: String[] = Reflect.getMetadata(PARAMS, cIns, cFun.name);
-
-            //比对需要的Model
-            let params = RouterHandler.paramsDI(cFunParams, resHandler, cIns.modelList, req, resHandler['res']);
-
-            //运行cFun
-            let ret = yield cFun.apply(cIns, params);
-
-            return ret;
-
-        });
-    }
-
-    private static getFinalPath(cPath: string, mPath: string): string {
-        //todo
-        if (mPath == '/')
-            return cPath;
-        else {
-            return (cPath == '/' ? '' : cPath) + mPath;
-        }
-    }
-
-    static paramsDI(cFunParams: String[], resHandler: ResponseHandler, Models: Map<String, any>, req: e.Request, res: e.Response): Object[] {
-        let ret = [];
-        for (let member of cFunParams) {
-            switch (member) {
-                case "ResponseHandler":
-                    ret.push(resHandler);
-                    break;
-                case "Origin":
-                    let o = new Origin();
-                    o.request = req;
-                    o.response = res;
-                    ret.push(o);
-                    break;
-                default:
-                    let model = Models.get(member);
-                    if (model) {
-                        let mIns = new model();
-                        let metaKeys: Set<string> = Reflect.getMetadata(PARAMETERS, mIns);
-                        let o = null;
-                        if (metaKeys) {
-                            o = requireHandleMethod(mIns, metaKeys, [req]);
-                        } else {
-                            o = requireHandleMethod(mIns, null, [req.query, req.params, req.body])
-                        }
-                        if (o)
-                            ret.push(o);
-                    } else {
-                        ret.push(null);
-                    }
-                    break;
+        let result = true;
+        // @Before Controller
+        for (const m of this.express.beforeControllerMethodList) {
+            const method = m as BeforeControllerMethod;
+            const methodret = await method(req, resHandler, cIns, cFun);
+            if (!methodret) {
+                this.debug(`method: ${method.name} return false`);
+                result = false;
             }
         }
+
+        if (result) {
+            this.debug(`Request (${cIns.constructor.name} -> ${cFun.name})`);
+            await this._controller(req, resHandler, cIns, cFun);
+        }
+
+        // @After Controller
+
+        for (const method of this.express.afterControllerMethodList) {
+            const methodret = await method(resHandler, cIns, cFun);
+            if (!methodret) {
+                this.debug(`method: ${method.name} return false`);
+                // todo
+                // 这里如果为false 则应返回500
+                result = false;
+            }
+        }
+
+        resHandler.response();
+
+    }
+
+    async _controller(req: e.Request, resHandler: ResponseHandler, cIns: IController, cFun: Function): Promise<ResponseHandler> {
+
+        // 获取cFun的接口
+        const cFunParams: String[] = Reflect.getMetadata(PARAMS, cIns, cFun.name);
+
+        // 比对需要的Model
+        const params = RouterHandler.paramsDI(cFunParams, resHandler, cIns.modelList, req, resHandler['res']);
+
+        // 运行cFun
+        const ret = await cFun.apply(cIns, params);
+
         return ret;
+
     }
 }
 

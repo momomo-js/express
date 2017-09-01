@@ -1,14 +1,11 @@
-import {ExpressServer} from "../src/bin/express-server";
-import {GET, POST} from "../src/decoration/symbol";
-import {Controller, Method, MoServer, Router} from "@mo/core";
-import {Express} from "../src/decoration/express";
-import {ResponseHandler} from "../src/bin/router/response.handler";
-import * as co from "co";
-import {ArrayType, Body, Param, Query} from "../src/decoration/parameter";
-import {ExpressDefaultPluginPackage} from "@mo/express-default-module";
-
-let server: MoServer = new MoServer('Hello', 3000);
-let express: ExpressServer = new ExpressServer();
+import {GET, POST} from '../src/decoration/symbol';
+import {Component, Controller, Instance, Method, Module, MoServer, Router, RouterManager} from '@mo/core';
+import {Express} from '../src/decoration/express';
+import {ResponseHandler} from '../src/bin/router/response.handler';
+import {ArrayType, Param, Query} from '../src/decoration/parameter';
+import {ExpressServer} from '../src/bin/mo-express-server';
+import {Injectable} from 'injection-js';
+import {ExpressDefaultPluginPackage} from '@mo/express-default-module';
 
 
 class IndexModel {
@@ -45,11 +42,9 @@ class IndexController {
             message: '完成响应'
         }]
     })
-    index(model: IndexModel, res: ResponseHandler): ResponseHandler {
-        return co(function* () {
-            res.status(1).body(model);
-            return res;
-        });
+    async index(model: IndexModel, res: ResponseHandler): Promise<ResponseHandler> {
+        res.status(1).body(model);
+        return res;
     }
 
     @Method(POST, '/:ts')
@@ -60,9 +55,8 @@ class IndexController {
         }]
     })
     post(model: NewIndexModel, res: ResponseHandler): ResponseHandler {
-        return co(function* () {
-            res.status(1).body(model);
-        })
+        res.status(1).body(model);
+        return res;
     }
 }
 
@@ -74,13 +68,51 @@ class IndexController {
 class IndexRouter {
 }
 
+@Injectable()
+class TestComponent extends Component {
 
-server.addServer(express);
-express.addPlugin(new ExpressDefaultPluginPackage());
+    constructor(public router: RouterManager) {
+        super();
+    }
 
-server.routerManager.addRouter([IndexRouter]);
+    onInit(): void {
+        this.debug(`testing onInit...`);
+        this.debug(`${this.router.constructor.name}`)
+    }
 
-server.startSever();
+    onStart(): void {
+        this.debug(`testing onStart...`);
+
+    }
+
+    onStop(): void {
+    }
+
+}
+
+@Module({
+    plugins: [],
+    components: [TestComponent]
+})
+class TestModule {
+}
+
+
+@Instance({
+    servers: [ExpressServer],
+    modules: [TestModule, TestModule],
+    routers: [IndexRouter],
+    components: [TestComponent, TestComponent],
+    instance: {
+        name: 'TEST',
+        host: 'localhost',
+        port: 3000
+    }
+})
+class TestInstance {
+}
+
+new MoServer(TestInstance).startSever().then();
 
 /**
  * Created by yskun on 2017/7/8.

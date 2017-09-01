@@ -1,8 +1,8 @@
-import {IParameter} from "../define/parameter.interface";
+import {IParameter} from '../define/parameter.interface';
 
-let QUERY = 'query';
-let PARAM = 'params';
-let BODY = 'body';
+const QUERY = 'query';
+const PARAM = 'params';
+const BODY = 'body';
 
 export let ARRAY_TYPE = 'array_type';
 export let PARAMETERS = 'response:parameters';
@@ -14,10 +14,10 @@ export let Body = decorator(BODY);
 
 function decorator(Type: string) {
     return function (target: any, propertyKey: string) {
-        let type: string = Reflect.getMetadata("design:type", target, propertyKey);
+        const type: string = Reflect.getMetadata('design:type', target, propertyKey);
 
         if (type) {
-            let p: IParameter = {
+            const p: IParameter = {
                 property: propertyKey,
                 type: type
             };
@@ -43,9 +43,8 @@ function decorator(Type: string) {
 
 export function ArrayType(Type: Object) {
     return function (target: any, propertyKey: string) {
-        if(Type)
-        {
-            Reflect.defineMetadata(ARRAY_TYPE,Type,target,propertyKey);
+        if (Type) {
+            Reflect.defineMetadata(ARRAY_TYPE, Type, target, propertyKey);
         }
     }
 }

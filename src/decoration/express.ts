@@ -1,5 +1,5 @@
-import {ExpressOptions} from "../define/express-options.interface";
-import {RESPOND} from "./symbol";
+import {ExpressOptions} from '../define/express-options.interface';
+import {RESPOND} from './symbol';
 
 export function Express(options?: ExpressOptions) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {

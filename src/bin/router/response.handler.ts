@@ -1,22 +1,22 @@
-import e = require("express");
-import * as mime from "mime";
-import * as path from "path";
-import {ResMessage} from "../../define/res-message.interface";
-import {getFileCache} from "./get-file-cache";
+import e = require('express');
+import * as mime from 'mime';
+import * as path from 'path';
+import {ResMessage} from '../../define/res-message.interface';
+import {getFileCache} from './get-file-cache';
 
 export class ResponseHandler {
-
-    constructor(private res: e.Response,
-                private _next: e.NextFunction,
-                private resMessage: ResMessage[] = null,
-                private rootPath = null) {
-    }
 
     private _status: number = 0;
     private _message: string = '';
     private _body: object;
     private _file: string = '';
     private _mark: boolean = false;
+
+    constructor(private res: e.Response,
+                private _next: e.NextFunction,
+                private resMessage: ResMessage[] = null,
+                private rootPath = null) {
+    }
 
     status(status: number): ResponseHandler {
         this._status = status;

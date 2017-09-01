@@ -1,6 +1,6 @@
 {
   "name": "@mo/express",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "mothings creative framework express module",
   "private": true,
   "main": "index.js",
@@ -22,6 +22,7 @@
     "co": "^4.6.0",
     "debug": "^2.6.8",
     "express": "^4.15.3",
+    "injection-js": "^2.1.0",
     "mime": "^1.3.6",
     "reflect-metadata": "^0.1.10",
     "underscore": "^1.8.3"
