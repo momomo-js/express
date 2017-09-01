@@ -3,7 +3,7 @@ import {Component, Controller, Instance, Method, Module, MoServer, Router, Route
 import {Express} from '../src/decoration/express';
 import {ResponseHandler} from '../src/bin/router/response.handler';
 import {ArrayType, Param, Query} from '../src/decoration/parameter';
-import {ExpressServer} from '../src/bin/mo-express-server';
+import {ExpressServer} from '../src/bin/express-server';
 import {Injectable} from 'injection-js';
 import {ExpressDefaultPluginPackage} from '@mo/express-default-module';
 
