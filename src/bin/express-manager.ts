@@ -1,9 +1,8 @@
 import * as e from 'express';
-import {MoBasicServer, MoServer, MoServerToken, ServerManager, State} from '@mo/core';
-import {RouterHandler} from './router-handler';
+import {MoBasicServer, ServerManager} from '@mo/core';
 import {ExpressAfterController, ExpressBeforeController, ExpressMiddleware} from '../decoration/symbol';
 import {AfterControllerMethod, BeforeControllerMethod} from '../define/controller-plugin.interface';
-import {Inject, Injectable} from 'injection-js';
+import {Injectable} from 'injection-js';
 
 @Injectable()
 export class ExpressManager extends MoBasicServer {
@@ -11,6 +10,7 @@ export class ExpressManager extends MoBasicServer {
     middlewareList: e.RequestHandler[] = [];
     beforeControllerMethodList: BeforeControllerMethod[] = [];
     afterControllerMethodList: AfterControllerMethod[] = [];
+
     // routerHandler: RouterHandler = new RouterHandler();
 
     constructor(private serverManager: ServerManager) {

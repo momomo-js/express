@@ -1,5 +1,15 @@
 import {
-    CONTROLLER, IController, METHOD, Mo, MoApplication, MoApplicationCycleLife, Module, MoInstance, OnInit, PARAMS, PATH,
+    CONTROLLER,
+    IController,
+    METHOD,
+    Mo,
+    MoApplication,
+    MoApplicationCycleLife,
+    Module,
+    MoInstance,
+    OnInit,
+    PARAMS,
+    PATH,
     RouterManager
 } from '@mo/core';
 import {ExpressManager} from './express-manager';
@@ -19,6 +29,7 @@ export class RouterHandler extends Mo implements OnInit {
 
     app: e.Express = null;
     controllerList: IController[] = null;
+
     static paramsDI(cFunParams: String[],
                     resHandler: ResponseHandler,
                     Models: Map<String, any>,
@@ -67,6 +78,7 @@ export class RouterHandler extends Mo implements OnInit {
             return (cPath === '/' ? '' : cPath) + mPath;
         }
     }
+
     constructor(private express: ExpressManager,
                 private routerManager: RouterManager) {
         super();

@@ -1,4 +1,5 @@
 export * from './src/bin/express-manager';
+export * from './src/bin/express-server';
 export * from './src/bin/router-handler';
 export * from './src/bin/router/response.handler';
 
