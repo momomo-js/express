@@ -1,11 +1,13 @@
-import {GET, POST} from '../src/decoration/symbol';
-import {Component, Controller, Instance, Method, Module, MoServer, Router, RouterManager} from '@mo/core';
+import {ExpressBeforeController, GET, POST} from '../src/decoration/symbol';
+import {Component, Controller, Instance, Method, Module, MoServer, Plugin, PluginPackage, Router, RouterManager} from '@mo/core';
 import {Express} from '../src/decoration/express';
 import {ResponseHandler} from '../src/bin/router/response.handler';
-import {ArrayType, Param, Query} from '../src/decoration/parameter';
+import {ArrayType, BODY, Params, PARAMS, Query, QUERY} from '../src/decoration/parameter';
 import {ExpressServer} from '../src/bin/express-server';
 import {Injectable} from 'injection-js';
-import {ExpressDefaultPluginPackage} from '@mo/express-default-module';
+import {ControllerFunction} from '../src/bin/function-di';
+import {Origin} from '../src/define/origin.class';
+import {Type} from '../src/decoration/type';
 
 
 class IndexModel {
@@ -18,7 +20,7 @@ class NewIndexModel {
     @ArrayType(Number)
     test: number[];
 
-    @Param
+    @Params
     ts: number;
 
     @Query
@@ -54,7 +56,8 @@ class IndexController {
             message: '完成响应'
         }]
     })
-    post(model: NewIndexModel, res: ResponseHandler): ResponseHandler {
+    post(model: NewIndexModel, res: ResponseHandler, @Type(QUERY, 'yy')username: string): ResponseHandler {
+        console.log(username);
         res.status(1).body(model);
         return res;
     }
@@ -90,19 +93,21 @@ class TestComponent extends Component {
 
 }
 
-@Module({
-    plugins: [],
-    components: [TestComponent]
-})
-class TestModule {
-}
+@PluginPackage(ExpressServer)
+class TestPluginPackage {
+    hahaha = `hahahah`;
 
+    @Plugin(ExpressBeforeController)
+    test(origin: Origin, res: ResponseHandler, controllerFunction: ControllerFunction) {
+        console.log(this.hahaha);
+    }
+
+}
 
 @Instance({
     servers: [ExpressServer],
-    modules: [TestModule, TestModule],
     routers: [IndexRouter],
-    components: [TestComponent, TestComponent],
+    plugins: [TestPluginPackage],
     instance: {
         name: 'TEST',
         host: 'localhost',
@@ -112,7 +117,9 @@ class TestModule {
 class TestInstance {
 }
 
-new MoServer(TestInstance).startSever().then();
+MoServer
+    .create(TestInstance)
+    .then(value => value.startSever());
 
 /**
  * Created by yskun on 2017/7/8.

@@ -2,7 +2,7 @@ import * as _ from "underscore";
 import {IParameter} from "../../define/parameter.interface";
 import {ARRAY_TYPE} from "../../decoration/parameter";
 
-function typeHandler(object: string, type: Object) {
+function  typeHandler(object: string, type: Object) {
     switch (type) {
         case Number:
             return Number(object);

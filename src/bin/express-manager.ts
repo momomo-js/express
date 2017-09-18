@@ -8,10 +8,8 @@ import {Injectable} from 'injection-js';
 export class ExpressManager extends MoBasicServer {
     app: e.Express = null;
     middlewareList: e.RequestHandler[] = [];
-    beforeControllerMethodList: BeforeControllerMethod[] = [];
-    afterControllerMethodList: AfterControllerMethod[] = [];
-
-    // routerHandler: RouterHandler = new RouterHandler();
+    beforeControllerMethodList: [any, BeforeControllerMethod][] = [];
+    afterControllerMethodList: [any, AfterControllerMethod][] = [];
 
     constructor(private serverManager: ServerManager) {
         super();
@@ -62,10 +60,14 @@ export class ExpressManager extends MoBasicServer {
             this.addMiddleware(...ret);
 
             ret = ExpressManager.getPlugin(pluginPackageIns, ExpressBeforeController);
-            this.beforeControllerMethodList.push(...ret);
+            ret.forEach(value => {
+                this.beforeControllerMethodList.push([pluginPackageIns, value]);
+            });
 
             ret = ExpressManager.getPlugin(pluginPackageIns, ExpressAfterController);
-            this.afterControllerMethodList.push(...ret);
+            ret.forEach(value => {
+                this.afterControllerMethodList.push([pluginPackageIns, value]);
+            });
         }
     }
 

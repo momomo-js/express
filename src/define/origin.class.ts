@@ -1,8 +1,9 @@
-import {Request,Response} from 'express';
+import {Request, Response} from 'express';
 
 export class Origin {
-    request:Request;
-    response:Response;
+
+    constructor(public request: Request, public  response: Response) {
+    }
 }
 
 /**

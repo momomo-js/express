@@ -1,14 +1,14 @@
 import {IParameter} from '../define/parameter.interface';
 
-const QUERY = 'query';
-const PARAM = 'params';
-const BODY = 'body';
+export const QUERY = 'query';
+export const PARAMS = 'params';
+export const BODY = 'body';
 
 export let ARRAY_TYPE = 'array_type';
 export let PARAMETERS = 'response:parameters';
 
 export let Query = decorator(QUERY);
-export let Param = decorator(PARAM);
+export let Params = decorator(PARAMS);
 export let Body = decorator(BODY);
 
 
