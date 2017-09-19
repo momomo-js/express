@@ -2,7 +2,7 @@ import * as e from 'express';
 import {MoBasicServer, ServerManager} from '@mo/core';
 import {ExpressAfterController, ExpressBeforeController, ExpressMiddleware} from '../decoration/symbol';
 import {AfterControllerMethod, BeforeControllerMethod} from '../define/controller-plugin.interface';
-import {Injectable} from 'injection-js';
+import {Injectable} from "injection-js";
 
 @Injectable()
 export class ExpressManager extends MoBasicServer {

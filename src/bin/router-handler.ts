@@ -1,4 +1,15 @@
-import {CONTROLLER, IController, METHOD, Mo, OnInit, PATH, RouterManager} from '@mo/core';
+import {
+    CONTROLLER,
+    IController,
+    METHOD,
+    Mo,
+    OnInit,
+    OnStart,
+    PATH,
+    RouterManager,
+    FunctionDi,
+    Parameter
+} from '@mo/core';
 import {ExpressManager} from './express-manager';
 import {DEL, GET, POST, PUT, RESPOND} from '../decoration/symbol';
 import {requireHandleMethod} from './router/require-handle.method';
@@ -7,11 +18,12 @@ import {ResMessage} from '../define/res-message.interface';
 import {Origin} from '../define/origin.class';
 import {PARAMETERS} from '../decoration/parameter';
 import {Injectable} from 'injection-js';
-import {ControllerFunction, FunctionDi, Parameter} from './function-di';
+import {ControllerFunction} from '../define/controller-function.class';
 import e = require('express');
 
 @Injectable()
-export class RouterHandler extends Mo implements OnInit {
+export class RouterHandler extends Mo implements OnInit, OnStart {
+
 
     app: e.Express = null;
     controllerList: IController[] = null;
@@ -25,22 +37,23 @@ export class RouterHandler extends Mo implements OnInit {
         }
     }
 
-    constructor(private express: ExpressManager,
-                private routerManager: RouterManager) {
+    constructor(private routerManager: RouterManager, public express: ExpressManager) {
         super();
     }
 
     onInit() {
-        this.initController();
-    }
-
-    initController() {
         this.debug(`init Controller`);
         this.app = this.express.app;
         if (!this.app) {
             throw new Error(`app is null`);
         }
+    }
 
+    onStart(): void {
+        this.initController();
+    }
+
+    initController() {
         this.controllerList = this.routerManager.controllerList;
 
         let router = e.Router();

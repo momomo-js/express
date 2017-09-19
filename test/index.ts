@@ -1,13 +1,23 @@
 import {ExpressBeforeController, GET, POST} from '../src/decoration/symbol';
-import {Component, Controller, Instance, Method, Module, MoServer, Plugin, PluginPackage, Router, RouterManager} from '@mo/core';
+import {
+    Component,
+    Controller,
+    Instance,
+    Method,
+    MoServer,
+    Plugin,
+    PluginPackage,
+    Router,
+    RouterManager
+} from '@mo/core';
 import {Express} from '../src/decoration/express';
 import {ResponseHandler} from '../src/bin/router/response.handler';
-import {ArrayType, BODY, Params, PARAMS, Query, QUERY} from '../src/decoration/parameter';
-import {ExpressServer} from '../src/bin/express-server';
+import {ArrayType, Params, Query, QUERY} from '../src/decoration/parameter';
 import {Injectable} from 'injection-js';
-import {ControllerFunction} from '../src/bin/function-di';
+import {ControllerFunction} from '../src/define/controller-function.class';
 import {Origin} from '../src/define/origin.class';
 import {Type} from '../src/decoration/type';
+import {ExpressServer} from "../src/bin/express-server";
 
 
 class IndexModel {

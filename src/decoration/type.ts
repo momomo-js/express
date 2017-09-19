@@ -1,5 +1,4 @@
-import {Parameter} from '../bin/function-di';
-import {PARAMS} from '@mo/core';
+import {PARAMS, Parameter} from '@mo/core';
 
 function getProp(method: 'body' | 'params' | 'query', prop: string) {
     return method + ':' + prop;
