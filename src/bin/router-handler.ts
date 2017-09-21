@@ -11,12 +11,12 @@ import {
     Parameter
 } from '@mo/core';
 import {ExpressManager} from './express-manager';
-import {DEL, GET, POST, PUT, RESPOND} from '../decoration/symbol';
+import {DEL, GET, POST, PUT, RESPOND} from '../decorator/symbol';
 import {requireHandleMethod} from './router/require-handle.method';
 import {ResponseHandler} from './router/response.handler';
 import {ResMessage} from '../define/res-message.interface';
 import {Origin} from '../define/origin.class';
-import {PARAMETERS} from '../decoration/parameter';
+import {PARAMETERS} from '../decorator/parameter';
 import {Injectable} from 'injection-js';
 import {ControllerFunction} from '../define/controller-function.class';
 import e = require('express');

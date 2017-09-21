@@ -1,4 +1,4 @@
-import {ExpressBeforeController, GET, POST} from '../src/decoration/symbol';
+import {ExpressBeforeController, GET, POST} from '../src/decorator/symbol';
 import {
     Component,
     Controller,
@@ -8,15 +8,15 @@ import {
     Plugin,
     PluginPackage,
     Router,
-    RouterManager
+    RouterManager,
+    Type
 } from '@mo/core';
-import {Express} from '../src/decoration/express';
+import {Express} from '../src/decorator/express';
 import {ResponseHandler} from '../src/bin/router/response.handler';
-import {ArrayType, Params, Query, QUERY} from '../src/decoration/parameter';
+import {ArrayType, Params, Query, QUERY} from '../src/decorator/parameter';
 import {Injectable} from 'injection-js';
 import {ControllerFunction} from '../src/define/controller-function.class';
 import {Origin} from '../src/define/origin.class';
-import {Type} from '../src/decoration/type';
 import {ExpressServer} from "../src/bin/express-server";
 
 

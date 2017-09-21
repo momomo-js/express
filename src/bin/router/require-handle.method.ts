@@ -1,6 +1,6 @@
 import * as _ from "underscore";
 import {IParameter} from "../../define/parameter.interface";
-import {ARRAY_TYPE} from "../../decoration/parameter";
+import {ARRAY_TYPE} from "../../decorator/parameter";
 
 function  typeHandler(object: string, type: Object) {
     switch (type) {

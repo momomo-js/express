@@ -1,6 +1,6 @@
 import * as e from 'express';
 import {MoBasicServer, ServerManager} from '@mo/core';
-import {ExpressAfterController, ExpressBeforeController, ExpressMiddleware} from '../decoration/symbol';
+import {ExpressAfterController, ExpressBeforeController, ExpressMiddleware} from '../decorator/symbol';
 import {AfterControllerMethod, BeforeControllerMethod} from '../define/controller-plugin.interface';
 import {Injectable} from "injection-js";
 
