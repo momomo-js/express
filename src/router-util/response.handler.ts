@@ -1,7 +1,7 @@
 import e = require('express');
 import * as mime from 'mime';
 import * as path from 'path';
-import {ResMessage} from '../../define/res-message.interface';
+import {ResMessage} from '../define/res-message.interface';
 import {getFileCache} from './get-file-cache';
 
 export class ResponseHandler {

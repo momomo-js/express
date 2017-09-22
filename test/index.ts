@@ -1,10 +1,8 @@
 import {ExpressBeforeController, GET, POST} from '../src/decorator/symbol';
 import {
-    Component,
     Controller,
     Instance,
-    Method,
-    MoServer,
+    Method, Mo, MoBasic, OnInit, OnStart,
     Plugin,
     PluginPackage,
     Router,
@@ -12,18 +10,12 @@ import {
     Type
 } from '@mo/core';
 import {Express} from '../src/decorator/express';
-import {ResponseHandler} from '../src/bin/router/response.handler';
+import {ResponseHandler} from '../src/router-util/response.handler';
 import {ArrayType, Params, Query, QUERY} from '../src/decorator/parameter';
 import {Injectable} from 'injection-js';
-import {ControllerFunction} from '../src/define/controller-function.class';
+import {CFunc} from '../src/define/c-func.class';
 import {Origin} from '../src/define/origin.class';
-import {ExpressServer} from "../src/bin/express-server";
-
-
-class IndexModel {
-    test = Number;
-    haha = Number;
-}
+import {ExpressServer} from "../src/express-server";
 
 class NewIndexModel {
     @Query
@@ -34,13 +26,12 @@ class NewIndexModel {
     ts: number;
 
     @Query
-    yy: number;
+    yy: number[];
 }
 
 
 @Controller({
     models: [
-        IndexModel,
         NewIndexModel
     ],
     path: '/'
@@ -54,8 +45,7 @@ class IndexController {
             message: '完成响应'
         }]
     })
-    async index(model: IndexModel, res: ResponseHandler): Promise<ResponseHandler> {
-        res.status(1).body(model);
+    async index(res: ResponseHandler): Promise<ResponseHandler> {
         return res;
     }
 
@@ -82,7 +72,7 @@ class IndexRouter {
 }
 
 @Injectable()
-class TestComponent extends Component {
+class TestComponent extends MoBasic implements OnStart, OnInit {
 
     constructor(public router: RouterManager) {
         super();
@@ -98,9 +88,6 @@ class TestComponent extends Component {
 
     }
 
-    onStop(): void {
-    }
-
 }
 
 @PluginPackage(ExpressServer)
@@ -108,7 +95,7 @@ class TestPluginPackage {
     hahaha = `hahahah`;
 
     @Plugin(ExpressBeforeController)
-    test(origin: Origin, res: ResponseHandler, controllerFunction: ControllerFunction) {
+    test(origin: Origin, res: ResponseHandler, controllerFunction: CFunc) {
         console.log(this.hahaha);
     }
 
@@ -127,7 +114,7 @@ class TestPluginPackage {
 class TestInstance {
 }
 
-MoServer
+Mo
     .create(TestInstance)
     .then(value => value.startSever());
 

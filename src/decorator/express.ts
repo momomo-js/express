@@ -2,11 +2,9 @@ import {ExpressOptions} from '../define/express-options.interface';
 import {RESPOND} from './symbol';
 
 export function Express(options?: ExpressOptions) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        if (options) {
-            if (options.responds) {
-                Reflect.defineMetadata(RESPOND, options.responds, target, propertyKey);
-            }
+    return function (target: any, propertyKey: string) {
+        if (options && options.responds) {
+            Reflect.defineMetadata(RESPOND, options.responds, target, propertyKey);
         }
     };
 }

@@ -1,10 +1,10 @@
 
-export class ControllerFunction {
+export class CFunc {
 
     constructor(public Class: Object, public  Function: Function) {
     }
 
-    getMetaData(key: string | symbol) {
+    getMetadata(key: string | symbol) {
         return Reflect.getMetadata(key, this.Class, this.Function.name);
     }
 }

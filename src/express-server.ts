@@ -1,5 +1,5 @@
-import {RouterHandler} from './router-handler';
-import {ExpressManager} from './express-manager';
+import {RouterHandler} from './core/router-handler';
+import {ExpressManager} from './core/express-manager';
 import {Server} from '@mo/core/src/decorator/server';
 
 

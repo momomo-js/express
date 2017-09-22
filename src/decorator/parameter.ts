@@ -1,4 +1,5 @@
 import {IParameter} from '../define/parameter.interface';
+import {MetadataArray} from "@mo/core";
 
 export const QUERY = 'query';
 export const PARAMS = 'params';
@@ -22,12 +23,7 @@ function decorator(Type: string) {
                 type: type
             };
 
-            let parameters: IParameter[] = Reflect.getMetadata(Type, target);
-            if (!parameters) {
-                parameters = [];
-                Reflect.defineMetadata(Type, parameters, target);
-            }
-
+            const parameters: IParameter[] = MetadataArray(Type, target);
             parameters.push(p);
 
             let types: Set<string> = Reflect.getMetadata(PARAMETERS, target);

@@ -1,39 +1,31 @@
 import * as e from 'express';
-import {MoBasicServer, ServerManager} from '@mo/core';
+import {MoServerPlugin, ServerManager, MoBasic, OnInit, getMoPlugin} from '@mo/core';
 import {ExpressAfterController, ExpressBeforeController, ExpressMiddleware} from '../decorator/symbol';
-import {AfterControllerMethod, BeforeControllerMethod} from '../define/controller-plugin.interface';
 import {Injectable} from "injection-js";
 
 @Injectable()
-export class ExpressManager extends MoBasicServer {
+export class ExpressManager extends MoBasic implements MoServerPlugin, OnInit {
     app: e.Express = null;
     middlewareList: e.RequestHandler[] = [];
-    beforeControllerMethodList: [any, BeforeControllerMethod][] = [];
-    afterControllerMethodList: [any, AfterControllerMethod][] = [];
+    beforeControllerMethodList: [any, any][] = [];
+    afterControllerMethodList: [any, any][] = [];
 
     constructor(private serverManager: ServerManager) {
         super();
     }
 
-
     onInit(): void {
-        super.onInit();
         this.app = e();
         this.initMiddleware();
         this.serverManager.app = this.app;
-        this.debug(`init finish`);
     }
 
     /**
      * 添加中间件
      * @param middleware 中间件
      */
-    addMiddleware(...middleware: e.RequestHandler[]) {
-
-        for (let i = 0; i < middleware.length; i++) {
-            this.middlewareList.push(middleware[i]);
-        }
-
+    addMiddleware(middleware: e.RequestHandler[]) {
+        this.middlewareList.push.apply(this.middlewareList, middleware);
     }
 
     /**
@@ -45,7 +37,6 @@ export class ExpressManager extends MoBasicServer {
         if (this.middlewareList) {
             for (let i = 0; i < this.middlewareList.length; i++) {
                 this.app.use(this.middlewareList[i]);
-
             }
         }
 
@@ -56,15 +47,15 @@ export class ExpressManager extends MoBasicServer {
         if (pluginPackageIns) {
             this.debug(`add plugin from ${pluginPackageIns.constructor.name}`);
 
-            let ret = ExpressManager.getPlugin(pluginPackageIns, ExpressMiddleware);
-            this.addMiddleware(...ret);
+            let ret = getMoPlugin(pluginPackageIns, ExpressMiddleware);
+            this.addMiddleware(ret);
 
-            ret = ExpressManager.getPlugin(pluginPackageIns, ExpressBeforeController);
+            ret = getMoPlugin(pluginPackageIns, ExpressBeforeController);
             ret.forEach(value => {
                 this.beforeControllerMethodList.push([pluginPackageIns, value]);
             });
 
-            ret = ExpressManager.getPlugin(pluginPackageIns, ExpressAfterController);
+            ret = getMoPlugin(pluginPackageIns, ExpressAfterController);
             ret.forEach(value => {
                 this.afterControllerMethodList.push([pluginPackageIns, value]);
             });
