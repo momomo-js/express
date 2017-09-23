@@ -1,7 +1,7 @@
-export let GET = Symbol('GET');
-export let POST = Symbol('POST');
-export let DEL = Symbol('DEL');
-export let PUT = Symbol('PUT');
+export let GET = Symbol('get');
+export let POST = Symbol('post');
+export let DEL = Symbol('delete');
+export let PUT = Symbol('put');
 export let RESPOND = Symbol('RESPOND');
 
 // Plugin
