@@ -13,7 +13,7 @@ import {
 } from '@mo/core';
 import {ExpressManager} from './express-manager';
 import {RESPOND} from '../decorator/symbol';
-import {requireHandleMethod} from '../router-util/require-handle.method';
+import {requireHandleMethod, typeHandler} from '../router-util/require-handle.method';
 import {ResponseHandler} from '../router-util/response.handler';
 import {ResMessage} from '../define/res-message.interface';
 import {Origin} from '../define/origin.class';
@@ -21,6 +21,7 @@ import {PARAMETERS} from '../decorator/parameter';
 import {Injectable} from 'injection-js';
 import {CFunc} from '../define/c-func.class';
 import e = require('express');
+import {isUndefined} from "util";
 
 
 @Injectable()
@@ -50,7 +51,7 @@ export class RouterHandler extends MoBasic implements OnInit, OnStart {
     }
 
     static getParam(di: FunctionDi, req: e.Request, param: Parameter) {
-        let pos = param.type.split(':');
+        let pos = param.target.split(':');
         if (pos[0] === 'body' || pos[0] === 'params' || pos[0] === 'query') {
             if (pos[0] === 'body' && !req.body) {
                 throw new Error(`request hasn't body`);
@@ -58,12 +59,22 @@ export class RouterHandler extends MoBasic implements OnInit, OnStart {
 
             let value = req[pos[0]];
             for (let p = 1; p < pos.length; p++) {
+                if (isUndefined(value)) {
+                    break;
+                }
+
                 value = value[pos[p]];
             }
 
+            let v;
+            if (value) {
+                v = typeHandler(value, param.type);
+            }
+
+
             di.push([{
                 type: param.type,
-                useValue: value ? value : null
+                useValue: !isUndefined(value) ? v : null
             }]);
         }
     }

@@ -1,7 +1,7 @@
 import {IParameter} from "../define/parameter.interface";
 import {ARRAY_TYPE} from "../decorator/parameter";
 
-function typeHandler(object: string, type: Object) {
+export function typeHandler(object: string, type: Object) {
     switch (type) {
         case Number:
             return Number(object);
