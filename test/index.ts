@@ -16,6 +16,7 @@ import {Injectable} from 'injection-js';
 import {CFunc} from '../src/define/c-func.class';
 import {Origin} from '../src/define/origin.class';
 import {ExpressServer} from "../src/express-server";
+import {Require} from "../src/decorator/require";
 
 class NewIndexModel {
     @Query
@@ -26,7 +27,7 @@ class NewIndexModel {
     ts: number;
 
     @Query
-    yy: number[];
+    yy: number;
 }
 
 
@@ -56,7 +57,7 @@ class IndexController {
             message: '完成响应'
         }]
     })
-    post(model: NewIndexModel, res: ResponseHandler, @Type(QUERY, 'yy')username: string): ResponseHandler {
+    post(model: NewIndexModel, res: ResponseHandler,@Require @Type(QUERY, 'yy')  username: number): ResponseHandler {
         console.log(username);
         res.status(1).body(model);
         return res;

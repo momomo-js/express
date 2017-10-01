@@ -32,6 +32,10 @@ export function requireHandleMethod(RequireModel: any, metadataKeys: Set<string>
         for (let parameter of parameters) {
 
             if (!object[parameter.property]) {
+                const rBool = Reflect.getMetadata("parameters:require", ret, parameter.property);
+                if (rBool === true) {
+                    return false;
+                }
                 continue;
             }
 

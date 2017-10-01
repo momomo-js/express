@@ -7,6 +7,7 @@ export * from './src/router-util/response.handler';
 
 export * from './src/decorator/express'
 export * from './src/decorator/parameter'
+export * from './src/decorator/require'
 export * from './src/decorator/symbol';
 
 export * from './src/define/c-func.class';

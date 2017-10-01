@@ -66,6 +66,10 @@ export class RouterHandler extends MoBasic implements OnInit, OnStart {
                 value = value[pos[p]];
             }
 
+            if (param.require === true && isUndefined(value)) {
+                return false;
+            }
+
             let v;
             if (value) {
                 v = typeHandler(value, param.type);
@@ -73,7 +77,7 @@ export class RouterHandler extends MoBasic implements OnInit, OnStart {
 
 
             di.push([{
-                type: param.type,
+                type: param.target,
                 useValue: !isUndefined(value) ? v : null
             }]);
         }
@@ -206,7 +210,12 @@ export class RouterHandler extends MoBasic implements OnInit, OnStart {
 
     static async controller_process(di: FunctionDi): Promise<ResponseHandler> {
         const cFunc: CFunc = di.get(CFunc);
-        RouterHandler.getParamModels(di);
+
+        const ret = RouterHandler.getParamModels(di);
+
+        if (ret instanceof ResponseHandler) {
+            return ret;
+        }
 
         // 获取func需要的参数
         let params = di.resolve(cFunc.Class, cFunc.Function);
@@ -217,6 +226,7 @@ export class RouterHandler extends MoBasic implements OnInit, OnStart {
     private static getParamModels(di: FunctionDi) {
         const cFunc: CFunc = di.get(CFunc);
         const origin: Origin = di.get(Origin);
+        const resHandler: ResponseHandler = di.get(ResponseHandler);
 
         const params = FunctionDi.getFunctionParam(cFunc.Class, cFunc.Function);
         const providers: Set<any> = Reflect.getMetadata(MODEL_LIST, cFunc.Class.constructor);
@@ -225,7 +235,12 @@ export class RouterHandler extends MoBasic implements OnInit, OnStart {
         const reqModels = [];
         for (let param of params) {
             if (param.spec === true) {
-                RouterHandler.getParam(di, origin.request, param);
+                const ret = RouterHandler.getParam(di, origin.request, param);
+                if (ret === false) {
+                    return resHandler
+                        .status(201)
+                        .message("参数请求不正确");
+                }
             } else if (providers && providers.has(param.type)) {
                 reqModels.push(param.type);
             }
@@ -237,6 +252,12 @@ export class RouterHandler extends MoBasic implements OnInit, OnStart {
             let mIns = new model;
             const metaKeys: Set<string> = Reflect.getMetadata(PARAMETERS, mIns);
             let o: any = requireHandleMethod(mIns, metaKeys, origin.request);
+
+            if (o === false) {
+                return resHandler
+                    .status(201)
+                    .message("参数请求不正确");
+            }
 
             if (o) {
                 mList.push(o);
